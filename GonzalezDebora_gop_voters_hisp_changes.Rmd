@@ -3,7 +3,7 @@ title: 'Local Demographic Changes and US Presidential Voting, 2012-2016: A Repli
 author: "Debi Gonzalez"
 date: "4/25/2020"
 output: bookdown::pdf_document2
-bibliography: references.bib
+bibliography: bibliography.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -44,16 +44,88 @@ Hilla, Hopkins, and Huberc (2019) argue that demographic changes are not associa
 
 # Introduction
 
-Immigration and demographic changes have become salient in American political discourse in great part due to Trump's capaign for tthe 2016 election. Inspired by previous inconclusive research on threatened response and county-level electoral outcomes, Hilla, Hopkins, and Huberc, henceforth HHH, compiled a novel, precinct-level data set of election results and census demographic measures for almost 32,000 precincts across 7 states to explore how demographic changes influenced republican vote share in affected precincts across the United States. The authors employed regression models with varying explanatory variables and measures of demographic change. Through this analysis, the authors find consistent evidence that 'influxes of Hispanics or non-citizen immigrants' were associated with decreased Republican vote share, which was assumed by the authors to mean shifts towards Trump's opponent in 2016. Dan Hopkins offers an overview and a link to the data for this research paper on [his website](http://web.sas.upenn.edu/danhop/research/">his website). The full original paper can be found [here](https://www-pnas-org.ezp-prod1.hul.harvard.edu/content/pnas/116/50/25023.full.pdf).
+Immigration and demographic changes have become salient in American political discourse in great part due to Trump's capaign for tthe 2016 election. Inspired by previous inconclusive research on threatened response and county-level electoral outcomes, Hilla, Hopkins, and Huberc, henceforth HHH, compiled a novel, precinct-level data set of election results and census demographic measures for almost 32,000 precincts across 7 states to explore how demographic changes influenced republican vote share in affected precincts across the United States [@. The authors employed regression models with varying explanatory variables and measures of demographic change. Through this analysis, the authors find consistent evidence that 'influxes of Hispanics or non-citizen immigrants' were associated with decreased Republican vote share, which was assumed by the authors to mean shifts towards Trump's opponent in 2016 [@research]. Dan Hopkins offers an overview and a link to the data for this research paper on [his website](http://web.sas.upenn.edu/danhop/research/">his website). The full original paper can be found [here](https://www-pnas-org.ezp-prod1.hul.harvard.edu/content/pnas/116/50/25023.full.pdf).
 
 
-Using R and RStudio, I succesfully replicated Hilla, Hopkins and Huberc’s results, except for minor discrepancies which do not affect their conclusions [@R]. Some of these discepancies can be associated with the inherent assumptions of the Stata software versus R. The replication process was lengthy and focused mainly on translating local variables from Stata (the coding language in which the original analysis was conducted) into R using the original datasets to construct the main eight models supporting the argument. A step by step replication of the 8 main models and graphics of the paper are included in the appendix. Thanks to the generosity of the authors the code and data used in this project are available at [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/J5GCZQ). For more information about this project please visit my project's Github repo^[[The data and code for this project can be found here.](https://github.com/deboragonzalez/gop_voters_hisp_changes)].
+Using R and RStudio, I succesfully replicated HHH’s results, except for minor discrepancies which do not affect their conclusions [@R]. Some of these discepancies can be associated with the inherent assumptions of the Stata software versus R. The replication process was lengthy and focused mainly on translating local variables from Stata (the coding language in which the original analysis was conducted) into R using the original datasets to construct the main eight models supporting the argument. A step by step replication of the 8 main models and graphics of the paper are included in the appendix. Thanks to the generosity of the authors the code and data used in this project are available at [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/J5GCZQ). For more information about this project please visit my project's Github repo^[[The data and code for this project can be found here.](https://github.com/deboragonzalez/gop_voters_hisp_changes)].
+
+
+
+```{r graphic, warning = FALSE}
+
+# This graphic is an initial attempt to replicate Fig. 1A from the paper:
+
+# Change in Republican vote share, 2012 to 2016, and change in Hispanic
+# population 2011-2016. Note: Points are random samples of 2,000 precincts.
+# Loess lines are generated from all observations. Points are shaded
+# corresponding to density, with darker colors indicating more precincts.
+
+# My graphic complies with the first two lines of that description. I am using
+# the sample function to get a random sample from my geo_scope dataset. I used
+# the geoscope dataset because I wanted to color the dots by state, which the
+# authors do not do, but I thought would be interesting and prettier. I was able
+# to create the loess line using geom_smooth, which does not appear disimilar to
+# the paper's model. I also added the aesthetic enhancement of size as number of
+# voters in 2016 in each precinct.
+
+geo_scope2 <- geo_scope %>% 
+  drop_na()
+
+try2 <- sample_n(geo_scope2, 2000)
+  
+# With every sample ran a different number of non-finite/missing values exists,
+# and a warning sign appears. Because these values are not relevant to the
+# graphic I'm constructing, I will ignore this warnings.
+
+
+
+try2 %>% 
+  ggplot(aes(x = gop_propvote_change, y = d1611_hispanic, size = Total_Voters_2016_Prct)) + 
+  
+  # gop_propvote_change is Change in Prop of Republican Voters 2016-2012
+  # d1611_hispanic is Change in Prop of Hispanic 2011-2016
+  # Total_Voters_2016_Prct is total number of voters by precinct
+  
+  geom_point(aes(color = st), alpha = 0.5) +
+  
+  # st refers to state label
+  
+  stat_smooth(method = "loess", formula = y ~ x, size = 1, se = FALSE) +
+  
+  # Method loess is a smoothing method that acts much like a regression, but it
+  # is not linear.
+  
+  xlim(-.3,.3) +
+  
+  # This will emphasize the part of the graph that is most dense.
+  
+  labs(title = "Republican Vote Share Change vs. Hispanic Population Share Change",
+       subtitle = "How changes in hispanic population share from 2011 to 2016 relate \nto changes in GOP Votes share from the 2012 to the 2016 election", caption = "Source: HHH Demographic Threat Data Archive: Geo_Scope",
+       x = expression(Delta*" Republican Vote Share 2012-2016"),
+       y = expression(Delta*" Hispanic Population Share 2011-2016"),
+       size = "Number of Voters \nby Precinct in 2016",
+       color = "State") + 
+  theme_classic()
  
+  
+```
+A visual association between changes of Republican Vote Share and Hispanic Population Proportion Change from 2012-2016. Random sample of 2000 precincts colored by state [@ggplot]. A loess line highlights the general trend of the data [@smooth]. I also added the aesthetic enhancement of size as number of voters in 2016 in each precinct [@data].
+ 
+ 
+I determined two main ways to examine the robustness of these models: 1) I examined the model outputs at higher level of aggregation by constructing the same models using a subset of data by state. In this case, I used Florida, which is my home state and one that has received a very high influx of hispanics over the last decade. Despite, the smaller sample, which inherently causes decreased statistical significance, HHH's overall conclusions are validated. 2) Heterogeneity in fixed effects models means different means among categories such as states and year. Unobserved heterogeneity is simply variation/differences among cases which are not measured. When the data can be grouped by such categories, and there are also some evidences indicating heterogeneity, the OLS is not sufficient to control the effects of these unobservable factors [@fixed]. However, fixed effects models can control and estimate these effects. I constructed mirror models using plm(y ~ x, data = mydata, within = “state”) and found that a fixed effects model do not alter the overarching conclusions even when absorbing the effects particular to each state [@fixed2]. Both methods resulted in successful measures of robustness confirming HHH's original quantitative findings, if not the exact theoretical claim. 
+
+In addition to exploring the robustness of HHH's findings, I built a new model using the original datasets to explore the association between economic indicators and changes in Republican voters. I constructed a series of models that explain shifts in GOP share of voters in terms of changes in hispanic proportion, changes in unemployment, and proportion change of poor to consider the economic influences on Republican voters share shifts respectively and in combination. In addition, I construct a model to examine how the interaction of change in unemployment and change in Hispanic proportion affect GOP vote share in each time period. I also construct a model using only changes in unemployment and proportion change of poor as explanatory variables to GOP share in these intervals. The results show that unemployment may have an even stronger effect on GOP share of voters between 2011-2016, but not in the 2000-2016, indicating an interesting trend in.... (penalization of candidates, demographic preferences, etc?).
+ 
+ 
+ 
+DELETE
 The first paragraph is a review of the paper you are replicating. Place it within the relevant literature, via a key citation or two. Highlight implications and caveats. 
 
 The second paragraph provides more details on your replications. Mention that you used R, and provide an citation to R which will appear in your bibliography. (See citation().) Cite the location from which you got the data and code for your replication. (This might be to the Dataverse, a webpage or “personal communication” with the author.) Provide a footnote with a link to your repo.
 
 The Third and Fourth paragraphs: What did you do? What did you find?
+DELETE
+
 
 \newpage
 # Paper & Literature Review
@@ -65,12 +137,121 @@ if something is worth understanding about the literature
 any relevant literature that has come out since then
 provide a summary in whatever level of detail you think is appropriate. 
 
+Notably, the authors discuss the research on the different ways in which influx of immigrants affect voters' response, but the variables used in this analysis mainly focus on influx of Hispanics
+
 
 # Replication
 
+I was able to successfully translate and replicate the main analysis of the original paper despite minor deviances that did not affect the overall conclusions of the study. Since the original analysis was done in Stata, this project required the translation of the code and a comparative analysis. A full replication of Table 1 and Figure 1 using the most approximate R tools of the original paper can be found in the appendix. 
 
 # Robustness Check #1: Subsetting the Data
 
+This exercise takes the dataset and runs the main 8 original models on a smaller subset of the data. In this case, the precincts in the state of Florida. Comparing these coefficients and their significance to those of the original data models solidify HHH's central argument as even a small subset of the data seems to confirm their generalized findings. In addition, these models provide insight into the consequences of slicing the data in different ways and the potential effect individual states may be having on the data as a whole.
+
+```{r fl_subset, results="asis"}
+
+fl_data <- precinct_data %>% 
+  filter(st == "FL")
+
+flm1 <- lm(gop_propvote_change ~ d1611_hispanic, data = fl_data, weights = weight) 
+
+
+
+# Regression Model 2:
+
+
+flm2 <- lm(gop_propvote_change ~ d1611_hispanic + l11_hispanic + d1611_poor + d1611_unemp + 
+           d1611_rent + d1611_rent_income + d1611_housing_150 + d1611_mfg + d1611_pop + 
+           l11_poor + l11_unemp + l11_rent + l11_rent_income + l11_housing_150 + l11_mfg + 
+           l11_density + l11_black + l11_educba + countyid, 
+         data = fl_data, 
+         weights = weight) 
+
+
+
+
+#Regression Model 3:
+
+
+flm3 <-  lm(gop_propvote_change ~ d1611_hispanic + l11_hispanic + d1611_poor + d1611_unemp + 
+           d1611_rent + d1611_rent_income + d1611_housing_150 + d1611_mfg + d1611_pop + 
+           l11_poor + l11_unemp + l11_rent + l11_rent_income + l11_housing_150 + l11_mfg + 
+           l11_density + l11_black + l11_educba + countyid + decile_repvote12, 
+         data = fl_data, 
+         weights = weight) 
+
+
+
+# Regression Model 4:
+
+flm4 <-  lm(gop_propvote_change ~  dprop1611_hispanic + l11_hispanic + d1611_poor + d1611_unemp + 
+           d1611_rent + d1611_rent_income + d1611_housing_150 + d1611_mfg + d1611_pop + 
+           l11_poor + l11_unemp + l11_rent + l11_rent_income + l11_housing_150 + l11_mfg + 
+           l11_density + l11_black + l11_educba + countyid + decile_repvote12, 
+         data = fl_data, 
+         weights = weight) 
+
+
+# Regression Model 5:
+
+
+
+flm5 <- lm(gop_propvote_change ~ d1600_hispanic, 
+         data = fl_data, 
+         weights = weight) 
+
+
+
+# Regression Model 6:
+
+
+
+flm6 <- lm(gop_propvote_change ~ d1600_hispanic + l00_hispanic + d1600_poor + d1600_unemp + 
+           d1600_mfg + d1600_pop + l00_poor + l00_unemp + l00_mfg + l00_density + l00_black + 
+           l00_educba + countyid,
+         data = fl_data,
+         weights = weight)
+
+
+# Regression Model 7:
+# regress `dv' `iv_c_1600' `cv_c_1600' `cv_l_1600' rv12d_* [aweight=weight], robust
+
+flm7 <- lm(gop_propvote_change ~ d1600_hispanic + l00_hispanic + d1600_poor + d1600_unemp + 
+           d1600_mfg + d1600_pop + l00_poor + l00_unemp + l00_mfg + l00_density + l00_black + 
+           l00_educba + countyid + decile_repvote12,
+         data = fl_data,
+         weights = weight)
+
+
+
+# Regression Model 8:
+# regress `dv' `iv_pc_1600' `cv_c_1600' `cv_l_1600'  rv12d_* [aweight=weight], robust
+
+flm8 <- lm(gop_propvote_change ~ dprop1600_hispanic + l00_hispanic + d1600_poor + d1600_unemp + 
+           d1600_mfg + d1600_pop + l00_poor + l00_unemp + l00_mfg + l00_density + l00_black + 
+           l00_educba + countyid + decile_repvote12,
+         data = fl_data,
+         weights = weight)
+
+
+stargazer(flm1, flm2, flm3, flm4, flm5, flm6, flm7, flm8,
+          title = "Change in Republican vote share 2012 to 2016 and change in Hispanic population, various time intervals in FL",
+         omit = c("d1611_poor", "d1611_unemp", "d1611_rent", "d1611_rent_income", "d1611_housing_150", "d1611_mfg",
+                  "d1611_pop", "l11_poor", "l11_unemp", "l11_rent", "l11_rent_income", "l11_housing_150", "l11_mfg",
+                  "l11_density", "l11_black", "l11_educba", "countyid", "d1600_poor", "d1600_unemp", "d1600_mfg",
+                  "d1600_pop", "l00_poor", "l00_unemp", "l00_mfg", "l00_density", "l00_black", "l00_educba",
+                  "decile_repvote12"),
+                  covariate.labels = c("Change in Prop. Hispanic, 2011 to 2016", "Prop. Change in Prop. Hispanic, 2011 to 2016",
+                              "Prop. Hispanic 2011", "Prop. Change in Prop. Hispanic, 2000 to 2016",
+                              "Change in Prop. Hispanic, 2000 to 2016","Prop. Hispanic 2000"),
+         omit.stat = c("f", "ser"),
+         dep.var.labels.include = FALSE,
+         
+         # Need to work on getting rid of dependent variable row.
+         
+         column.sep.width = "-15pt",
+         no.space = T)
+```
 
 # Robutness Check #2: Fixed Effects Model
 
