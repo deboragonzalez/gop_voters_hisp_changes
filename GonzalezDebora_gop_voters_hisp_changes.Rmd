@@ -483,7 +483,7 @@ Table 3 shows a lack of statistical significance for Models #1 and #5 compared t
 # A New Model: Economic Indicators & Hispanic Population Change {-}
 
 
-Notably, HHH's findings are robust and I wanted to further explore the relationship they identified to examine whether there may be alternative theoretical pathways through which this relationship exists. The literature suggests that economic factors may play a role in the effect of racial rethoric in the political arena [@usimpact]. The models I built isolate economic indicators such measure of unemployment and change in proportion of poor to explore their effect on republican vote share as well as their association to hispanic proportion changes.
+Notably, HHH's findings are robust and I wanted to further explore the relationship they identified to examine whether there may be alternative theoretical pathways through which this relationship exists. The literature suggests that economic factors may play a role in the effect of racial rethoric in the political arena [@usimpact]. The models I built isolate economic indicators - measure of unemployment and change in proportion of poor - to explore their effect on republican vote share as well as their association to hispanic proportion changes.
 
 ```{r econ, results="asis"}
 
@@ -513,12 +513,16 @@ stargazer(ecm1, ecm1.5, ecm2, ecm2.5, ecm3,
           title = "Change in Republican vote share 2012 to 2016 and change in Economic Indicators and Hispanic population, various time intervals",
          omit.stat = c("f", "ser"),
          covariate.labels = c("Change in Prop. Hispanic, 2011 to 2016", "Change in Prop. Unemployed, 2011 to 2016", "Interaction: Chg Prop. Hisp 11-16 and Chg Prop. Unemp. 11-16", "Change in Prop. Poor, 2011 to 2016", "Interaction: Chg Prop. Hisp 11-16 and Chg Prop. Poor 11-16"),
-         dep.var.labels.include = FALSE,
+         dep.var.labels.include = TRUE, 
+         dep.var.labels = "GOP Vote Share Change, 2012 to 2016",
          
-         # Need to work on getting rid of dependent variable row.
-         
-         column.sep.width = "-5pt",
-         no.space = T)
+         column.sep.width = "-10pt",
+         no.space = T,
+         notes.align = "l",
+         notes = "\\parbox[t]{8.2cm}{Precinct-level economic effects analysis from 2011 to 2016. Not all models are statistically significant, but special attention should be paid to models 1,3, and 5.}",
+         notes.append = TRUE,
+         # table.placement = "H",
+         header = F)
 
 
 
@@ -526,22 +530,105 @@ stargazer(ecm1, ecm1.5, ecm2, ecm2.5, ecm3,
 
 ```
 
-Table 4 explores the association between economic indicators and changes in Republican voters between 2011 and 2016. The first model indicates that changes in unemployment between 2011 and 2016 have a stronger negative effect on the change of Republican vote share (positive values indicate pro-Republican shifts) than increases in Hispanic proportion change during this time period. The magnitude is significantly greater and both values hold statistical significance. In model 2, we observe the interaction effect between Hispanic change and unemployment change is actually positive suggesting that if there is both an influx of Hispanics and a spike in unemployment, then the Republican vote share would be positively impacted. Notably, this value is not statistically significant due to its large standard error and requires further testing. Model 3 indicates that changes in proportion of poor is associated with positive change in GOP votes share, a value that is small, but statistically significant. The interaction between change in proportion of Hispanics and change in proportion of poor resulted in a miniscule positive coefficient without statiscal significance, which may indicate Republican favor, but requires further analysis. The last model shows the effect of each of these explanatory variables when controlling for the others indicating that changes in unemployment has, in fact, a much stronger influence than even Hispanic influx over the 2012-2016 period.
+Table 4 explores the association between economic indicators and changes in Republican voters between 2011 and 2016. The first model indicates that increased proportion unemployed between 2011 and 2016 have a larger negative effect on Republican vote share (positive values indicate pro-Republican shifts) than increased Hispanic proportion during the 2011-2016 time period. The magnitude for the unemployment coefficient is significantly larger than that of hispanic proportion change and both values hold statistical significance. Model 3 indicates that changes in proportion of poor is associated with positive change in GOP votes share, a value that is small, but statistically significant. This coefficient suggests that, at a very small scale, an increase in poverty may benefit the GOP. The last model, model 5, shows the effect of each of these explanatory variables when controlling for the others indicating that changes in unemployment has, in fact, a much larger negative effect than Hispanic influx on republican vote share over the 2012-2016 period.
+
+Models 2 and 4 offer inconclusive results due to statistical insignificance. However, they offer insight into potential new models or datasets that can be used for further study. In model 2, we observe the interaction effect between Hispanic change and unemployment change is actually positive suggesting that if there is both an influx of Hispanics and a spike in unemployment, then the Republican vote share would be positively impacted. Notably, this value is not statistically significant due to its large standard error and requires further testing. The interaction between change in proportion of Hispanics and change in proportion of poor in model 4 resulted in a miniscule positive coefficient without statiscal significance, which may indicate Republican favor, but requires further analysis.
+
+Interestingly, the associations in these models indicate potential to explore alternative theoretical pathways to explain the relationship between demographic changes and Republican vote share. As unemployment rises, the Democratic party benefits, which at a high-level seems to support the welfare-related rethoric associated with it. However, when unemployment rises accompanied by an increase in Hispanics, then the GOP benefits suggesting a "deserving/undeserving immigrant" story where well-off (or deserving) minority groups are accepted, but not those deemed undeserving. Perhaps another theoretical approach could be the "race-based blame" argument where an influx of Hispanics is blamed for unemployment increases. It would be interesting to explore how voting patterns change when the unemployed increases pertain to the newly arrived or to the native population. 
+
+
+```{r econ_fig}
+
+
+# This plot aims to visualize the association between unemployment prop. changes
+# and republican vote share.
+
+
+fig2a <- augment(ecm1) %>%
+  
+  # Using the augment function to plot the fitted values.
+  
+  ggplot(aes(x = d1611_unemp, y = .fitted))+
+  geom_line() +
+  geom_ribbon(aes(ymin = .fitted - 1.96 * .se.fit,
+                  ymax = .fitted + 1.96 * .se.fit),
+              alpha = 0.7) +
+  labs(title = "",
+       subtitle = "",
+       x = "Change in Prop. Unemployed, 2011 to 2016",
+       y = "Predicted Change in GOP Vote Share") +
+  theme_classic()
+
+
+# This plot aims to visualize the association between hispanic prop change and
+# republican vote share.
+
+
+fig2b <- augment(ecm1) %>%
+  ggplot(aes(x = d1611_hispanic, y = .fitted))+
+  geom_line() +
+  geom_ribbon(aes(ymin = .fitted - 1.96 * .se.fit,
+                  ymax = .fitted + 1.96 * .se.fit),
+              alpha = 0.7) +
+  labs(title = "",
+       subtitle = "",
+       x = "Change in Prop. Hispanic, 2011 to 2016",
+       y = "Predicted Change in GOP Vote Share") +
+  theme_classic()
+
+fig2_1 <- plot_grid(fig2a, fig2b, labels = "AUTO")
+
+# now add the caption
+title <- ggdraw() + 
+  draw_label(
+    "Model 1 Visualization",
+    fontface = 'bold',
+    x = 0,
+    hjust = 0
+  ) +
+  theme(plot.margin = margin(0, 0, 0, 2))
+    
+    # add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot    
+
+
+fig2 <- plot_grid(title, fig2_1, ncol = 1,
+                   rel_heights = c(0.1, 1))
+
+ggdraw(add_sub(fig2, "There is a clearer association between increased unemployment and loss of GOP vote share.", size = 10))
+
+```
+
 
 
 # Conclusion {-}
 
-HHH argue that demographic shifts did not benefit Trump at the precinct level during the 2016 election, but rather his opponent. The authors find consistent evidence that hispanic influx led to decreased republican vote share. My replication was successful despite the deviances inherent to a translation of the original models to R. The three robustness tests further confirmed HHH's findings, which allowed me to explore a new model using economic indicators as explanatory variables to GOP vote share. The results are intriguing indicating a stronger relationship between increased unemployment and GOP vote share than any of the other variables studied. This finding suggests opportunities for further studies exploring the mechanisms through which unemployment affects the outcome. 
+HHH argue that demographic shifts did not benefit Trump at the precinct level during the 2016 election, but rather these shifts benefited his opponent. Through 8 main OLS regression models using precinct-level American Community Survey and Census data, the authors explore the relationship between Hispanic proportion increases and changes in Republican vote share across 7 states. In their analysis they find consistent evidence that hispanic influx led to decreased republican vote share. My replication was successful despite the deviances inherent to a translation of the original models into R. 
+
+
+The three robustness tests applied to HHH's models further confirmed HHH's findings. The Florida subset analysis showed that the authors' general conclusions were applicable to the state despite decreased statistical significance and deviance in some of the models. I successfully concluded that no individual state was the main driver of the original conclusions running model 3 of the original paper on 7 different samples, each of which was missing data for a particular state. Given the data's categorization by state, I was concerned about heterogeneity so I constructed a fixed effects model, which, despite minor discrepancies, supported HHH's results. 
+
+
+Confirming HHH's models' robustness allowed me to explore a new set of models using economic indicators - change in proportion unemployed and in proportion poor - as explanatory variables to GOP vote share along with change in proportion of Hispanics. The results are intriguing indicating a clearer relationship between increased unemployment and GOP vote share than any of the other variables studied. This finding suggests opportunities for further studies exploring the mechanisms through which unemployment affects the outcome. Notably, a look at alternative theoretical pathways such as the deserving/undeserving immigrant hypothesis or perhaps a 'racially-charged economic-based backlash' theory, emphasizing voters' response to politicians, may be one way to further expand this study. Exploring these theories may require additional data that separates Hispanics that are able to vote from Hispanic immigrants (who have not yet naturalized) in order to identify whether the effects observed are associated with incoming Hispanics voting or a result of local socialization with incoming groups. 
+
+Hispanics are a large demographic group and is rapidly growing in the United States. The influence they have on the nation's politics and political outcomes is essential to academics and politicians alike. HHH's paper offers clear indication that Hispanic presence translates to decreased proportion of Republican voters
 
 
 
 \newpage
 # Appendix {-}
 
-### Replication of Table 1: {-}
+Results from Hilla, Hopkins, and Huberc (2019) were successfully replicated. As an example, here is Table 1 from page 4.
+
+### Original Table {-}
+
+![](Original_Table1.JPG)
+
 
 Table 1 presents multiple least-squares regression estimates of how changes in Hispanic populations at different time intervals correlate with increases in Republican precinct-level vote share between 2012 and 2016.
 
+\newpage
+### Replication of Table 1: {-}
 ```{r table1, results="asis"}
 
 # AnalyzePooledPrecinctLevelFiles.do 
@@ -680,7 +767,8 @@ stargazer(m1, m2, m3, m4, m5, m6, m7, m8,
           # Need to work on getting rid of dependent variable row.
           
           column.sep.width = "-15pt",
-          no.space = T)
+          no.space = T,
+          header = F)
 
 # float.env = "sidewaystable")
 # This was not necessary in the end bc I was able to reduce size.
@@ -719,7 +807,7 @@ stargazer(m1, m2, m3, m4, m5, m6, m7, m8,
 
 
 
-### Figure 1 {-}
+### Replication of Figure 1 {-}
 
 Figure 1 (A, B, C, & D) examine(s) how changes in Hispanic populations correlate with increases in Republican precinct-level vote share between 2012 and 2016. The figure shows change in the Republican share of the 2-party vote from 2012 to 2016 (positive values indicate pro-Republican shifts) against 4 different measures of change in the Hispanic population on the x axis. The 1st frame (A) measures changing population as the change in the Hispanic proportion of the overall population from 2011 to 2016, the 2nd (B) as the same change from 2000 to 2016, and the 3rd (C) and 4th (D) as proportional changes in the Hispanic population for each period.
 
@@ -1026,7 +1114,7 @@ fig1d
 
 ```
 
-The figure shows a negative relationship between increasing Hispanic populations and heightened Republican support. This association holds for either the between-election time period of 2011 to 2016 or the longer time period of 2000 to 2016. Proportional changes in the 3rd and 4th frames both show a flat relationship between proportional change and change in Republican support.
+To see Figure 1's replication, please refer to the Rmarkdown document publicly available in [this project's GitHub repo](https://github.com/deboragonzalez/gop_voters_hisp_changes). The figure shows a negative relationship between increasing Hispanic populations and heightened Republican support. This association holds for either the between-election time period of 2011 to 2016 or the longer time period of 2000 to 2016. Proportional changes in the 3rd and 4th frames both show a flat relationship between proportional change and change in Republican support.
 
 \newpage
 # References
