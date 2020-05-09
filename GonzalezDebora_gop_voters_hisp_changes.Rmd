@@ -1,7 +1,7 @@
 ---
 title: 'Local Demographic Changes and US Presidential Voting, 2012-2016: A Replication'
-author: "Debi Gonzalez"
-date: "4/25/2020"
+author: "Debora Gonzalez"
+date: "5/08/2020"
 header-includes:
     - \usepackage{setspace}\doublespacing
     - \usepackage{float}
@@ -43,7 +43,7 @@ precinct_data <- read_dta("dataverse_files/HHHDemogThreatRepArchive/PrecinctData
 \newpage
 # Abstract {-}
 
-Hilla, Hopkins, and Huberc (2019) argue that demographic changes are not associated with increased Republican vote share at the precinct level between 2012 and 2016. I succesfully replicated Hilla, Hopkins and Huberc’s results. A robustness test using a subset analysis focusing on the state of FL indicates, despite minor state-specific deviance and poor statistical significance due to reduced sample size, that the authors' overall findings are valid. Another test focusing on the effect of any individual state on the overall outcome was also found to support the original paper's robustness. In addition, I constructed a fixed effects model by state, which further confirmed original findings even under fixed effects assumptions. In a twist of analysis, I constructed a new model analyzing the association between Republican vote share and economic indicators while controlling for change in percent Hispanic. The latter models indicate a stronger relationship between unemployment proportion change and GOP vote share than between changes in Hispanic proportion and GOP vote share, which suggests an opportunity for further research. 
+Hilla, Hopkins, and Huberc (2019) argue that demographic changes are not associated with increased Republican vote share at the precinct level between 2012 and 2016. I succesfully replicated Hilla, Hopkins and Huberc’s results. A robustness test using a subset analysis focusing on the state of FL indicates, despite minor state-specific deviance and poor statistical significance due to reduced sample size, that the authors' overall findings are valid. Another test focusing on the effect of any individual state on the overall outcome was also found to support the original paper's robustness. In addition, I constructed a fixed effects model by state, which further confirmed original findings even under fixed effects assumptions. In a twist of analysis, I constructed a new model analyzing the association between Republican vote share and economic indicators while controlling for change in percent Hispanic. The latter models indicate a stronger relationship between unemployment proportion change and GOP vote share, which suggests an opportunity for further research with alternative theoretical pathways involving economic indicators. 
 
 
 # Introduction {-}
@@ -143,8 +143,8 @@ HHH employ OLS regression analyses with varying explanatory variable(s) specific
 
 I was able to successfully translate and replicate the main analysis of the original paper despite minor deviances that did not affect the overall conclusions of the study. Since the original analysis was done in Stata, this project required the translation of the code and a comparative analysis between the replicated and original output. A full replication of Table 1 and Figure 1  of the original paper using the most approximate R tools can be found in the appendix. 
 
-\newpage
-# Robustness Check #1: Subsetting the Data {-}
+
+# Robustness Check #1 & #2: Subsetting the Data {-}
 
 One way to test for robustness is to examine the ways in which different states affect the overall trends. Notably, if a subset of the data has largely skewed results, the original findings are not invalidated given the diminished statistical significance of the subset, but the results' predictive applicability and generizability can be questioned. For this project, I decided to run the main 8 original models on a smaller subset of the data - the precincts in the state of Florida. Examining the single state allowed me to zoom in and see how these associations look like in a state that is increasingly known as a swing state in U.S. elections. 
 
@@ -379,7 +379,7 @@ stargazer(noFL, noGA, noMI, noNV, noOH, noPA, noWA,
 
 The coefficients of these models (each of which excludes a different state) consistently support HHH's findings and conclude that the results are not driven by any single state. 
 
-# Robutness Check #2: Fixed Effects Model {-}
+# Robutness Check #3: Fixed Effects Model {-}
 
 
 In statistics, a model that has fixed parameters or non-random quantities is called a fixed effects model. In general, based on some observed factors, data can be divided into groups. The group means could be assumed as constant or non-constant across groups. In a fixed effects model, just as its name implies, each group mean is a specifically fixed quantity. Furthermore, the assumption of fixed effect is that the group-specific effects are correlated with the independent variables. Heterogeneity in fixed effects models means different means among categories such as states. Unobserved heterogeneity is simply variation/differences among cases which are not measured. When the data can be grouped by such categories, and there is also some evidence indicating heterogeneity, the OLS is not sufficient to control the effects of these unobservable factors. However, fixed effects models can control and estimate these effects. The plm fixed effects model essentially captures any and all systematic differences across precincts that are state-invariant. Transforming the original models into fixed effects models, I test whether the state induced heterogeneity impacts HHH's overall findings.
@@ -555,7 +555,7 @@ fig2a <- augment(ecm1) %>%
               alpha = 0.7) +
   labs(title = "",
        subtitle = "",
-       x = "Change in Prop. Unemployed, 2011 to 2016",
+       x = "Change in Prop. Unemployed, 2011-16",
        y = "Predicted Change in GOP Vote Share") +
   theme_classic()
 
@@ -572,7 +572,7 @@ fig2b <- augment(ecm1) %>%
               alpha = 0.7) +
   labs(title = "",
        subtitle = "",
-       x = "Change in Prop. Hispanic, 2011 to 2016",
+       x = "Change in Prop. Hispanic, 2011-16",
        y = "Predicted Change in GOP Vote Share") +
   theme_classic()
 
@@ -603,7 +603,7 @@ ggdraw(add_sub(fig2, "There is a clearer association between increased unemploym
 
 # Conclusion {-}
 
-HHH argue that demographic shifts did not benefit Trump at the precinct level during the 2016 election, but rather these shifts benefited his opponent. Through 8 main OLS regression models using precinct-level American Community Survey and Census data, the authors explore the relationship between Hispanic proportion increases and changes in Republican vote share across 7 states. In their analysis they find consistent evidence that hispanic influx led to decreased republican vote share. My replication was successful despite the deviances inherent to a translation of the original models into R. 
+HHH argue that demographic shifts did not benefit Trump at the precinct level during the 2016 election, but rather these shifts benefited his opponent. Through 8 main OLS regression models using precinct-level American Community Survey and Census data, the authors explore the relationship between Hispanic proportion increases and changes in Republican vote share across 7 states. In their analysis they find consistent evidence that hispanic influx was associated with decreased republican vote share. My replication was successful despite the deviances inherent to a translation of the original models into R. 
 
 
 The three robustness tests applied to HHH's models further confirmed HHH's findings. The Florida subset analysis showed that the authors' general conclusions were applicable to the state despite decreased statistical significance and deviance in some of the models. I successfully concluded that no individual state was the main driver of the original conclusions running model 3 of the original paper on 7 different samples, each of which was missing data for a particular state. Given the data's categorization by state, I was concerned about heterogeneity so I constructed a fixed effects model, which, despite minor discrepancies, supported HHH's results. 
@@ -611,7 +611,7 @@ The three robustness tests applied to HHH's models further confirmed HHH's findi
 
 Confirming HHH's models' robustness allowed me to explore a new set of models using economic indicators - change in proportion unemployed and in proportion poor - as explanatory variables to GOP vote share along with change in proportion of Hispanics. The results are intriguing indicating a clearer relationship between increased unemployment and GOP vote share than any of the other variables studied. This finding suggests opportunities for further studies exploring the mechanisms through which unemployment affects the outcome. Notably, a look at alternative theoretical pathways such as the deserving/undeserving immigrant hypothesis or perhaps a 'racially-charged economic-based backlash' theory, emphasizing voters' response to politicians, may be one way to further expand this study. Exploring these theories may require additional data that separates Hispanics that are able to vote from Hispanic immigrants (who have not yet naturalized) in order to identify whether the effects observed are associated with incoming Hispanics voting or a result of local socialization with incoming groups. 
 
-Hispanics are a large demographic group and is rapidly growing in the United States. The influence they have on the nation's politics and political outcomes is essential to academics and politicians alike. HHH's paper offers clear indication that Hispanic presence translates to decreased proportion of Republican voters
+Hispanics comprise a large demographic group that is rapidly growing in the United States. Understanding the influence they have on the nation's politics and political outcomes is essential to academics and politicians alike. HHH's paper offers clear indication that Hispanic presence translates to decreased proportion of Republican voters, but the mechanisms through which this effect occurs is certainly an opportunity for further research. 
 
 
 
